@@ -15,10 +15,22 @@ class AsyncController {
     static AsyncHttpClient.BoundRequestBuilder preparedGet
     static {
         AsyncHttpClientConfig config = new AsyncHttpClientConfig.Builder().build();
+        // failed in OutOfMemory without Grizzly, seems to be a Netty bug
+        // see also https://groups.google.com/forum/#!topic/asynchttpclient/yUxhr1BvIQo
         AsyncHttpClient asyncHttpClient = new AsyncHttpClient(new GrizzlyAsyncHttpProvider(config), config);
         preparedGet = asyncHttpClient.prepareGet("http://www.example.com/")
     }
 
+    /**
+     * runs in tomcat, but number of concurrent requests is limited to number of maxThreads (it's not non-blocking
+     * )
+     * produces log output:
+     * async_action done
+     * p1 done
+     * p2 done
+     * p3 done
+     * waitAll done
+     */
     def async_action() {
         def promise = task {
             def p1 = task {
@@ -42,6 +54,14 @@ class AsyncController {
         return promise
     }
 
+    /**
+     * the normal sync way
+     *
+     * produces log output:
+     * p1 done
+     * p2 done
+     * p3 done
+     */
     def sync_action() {
         def p1 = 2 * 2
         log.info("p1 done")
@@ -52,6 +72,15 @@ class AsyncController {
         render "p1: $p1, p2: $p2, p3: $p3"
     }
 
+    /**
+     * runs on netty very fast: 3k+ requests per second
+     *
+     * produces log output:
+     * p1 done
+     * p2 done
+     * p3 done
+     * waitAll done
+     */
     def netty_async_action() {
         Promise p1 = task {
             execp1()
