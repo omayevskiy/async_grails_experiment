@@ -10,6 +10,9 @@ import grails.async.Promise
 import static grails.async.Promises.task
 import static grails.async.Promises.waitAll
 
+/**
+ * at least running 100 concurrent requests is not an issue for all three use case
+ */
 class AsyncController {
 
     static AsyncHttpClient.BoundRequestBuilder preparedGet
@@ -104,7 +107,7 @@ class AsyncController {
 
     def execp1() {
 
-        preparedGet.execute(new AsyncCompletionHandler<Response>() {
+       /* preparedGet.execute(new AsyncCompletionHandler<Response>() {
 
             @Override
             public Response onCompleted(Response response) throws Exception {
@@ -117,6 +120,6 @@ class AsyncController {
             public void onThrowable(Throwable t) {
                 // Something wrong happened.
             }
-        });
+        });*/
     }
 }
