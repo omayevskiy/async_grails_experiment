@@ -1,14 +1,11 @@
 package eval
 
-import com.ning.http.client.AsyncCompletionHandler
 import com.ning.http.client.AsyncHttpClient
 import com.ning.http.client.AsyncHttpClientConfig
-import com.ning.http.client.Response
 import com.ning.http.client.providers.grizzly.GrizzlyAsyncHttpProvider
 import grails.async.Promise
 
-import static grails.async.Promises.task
-import static grails.async.Promises.waitAll
+import static grails.async.Promises.*
 
 /**
  * at least running 100 concurrent requests is not an issue for all three use case
@@ -100,26 +97,31 @@ class AsyncController {
             log.info("p3 done")
             8 * 8
         }
-        def result = waitAll(p1, p2, p3)
-        log.info("waitAll done")
-        render "p1: ${result[0]}, p2: ${result[1]}, p3: ${result[2]}"
+        onComplete([p1, p2, p3]) { List result ->
+            log.info("waitAll done")
+            render "p1: ${result[0]}, p2: ${result[1]}, p3: ${result[2]}"
+        }
+        onError([p1,p2,p3]) { Throwable t ->
+           render "An error occured ${t.message}"
+        }
+
     }
 
     def execp1() {
 
-       /* preparedGet.execute(new AsyncCompletionHandler<Response>() {
+        /* preparedGet.execute(new AsyncCompletionHandler<Response>() {
 
-            @Override
-            public Response onCompleted(Response response) throws Exception {
-                // Do something with the Response
-                // ...
-                return response;
-            }
+             @Override
+             public Response onCompleted(Response response) throws Exception {
+                 // Do something with the Response
+                 // ...
+                 return response;
+             }
 
-            @Override
-            public void onThrowable(Throwable t) {
-                // Something wrong happened.
-            }
-        });*/
+             @Override
+             public void onThrowable(Throwable t) {
+                 // Something wrong happened.
+             }
+         });*/
     }
 }
