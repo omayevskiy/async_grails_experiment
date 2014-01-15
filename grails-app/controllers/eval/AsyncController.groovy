@@ -31,7 +31,7 @@ class AsyncController {
      * p3 done
      * waitAll done
      */
-    def async_action() {
+    def async_action_with_wait() {
         def promise = task {
             def p1 = task {
                 log.info("p1 done")
@@ -81,7 +81,7 @@ class AsyncController {
      * p3 done
      * waitAll done
      */
-    def netty_async_action() {
+    def async_action_without_wait() {
         Promise p1 = task {
             execp1()
             log.info("p1 done")
@@ -100,9 +100,6 @@ class AsyncController {
         onComplete([p1, p2, p3]) { List result ->
             log.info("waitAll done")
             render "p1: ${result[0]}, p2: ${result[1]}, p3: ${result[2]}"
-        }
-        onError([p1,p2,p3]) { Throwable t ->
-           render "An error occured ${t.message}"
         }
 
     }
